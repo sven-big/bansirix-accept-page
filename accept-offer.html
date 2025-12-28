@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceptare Ofertă</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            color: #667eea;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .offer-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .offer-info h2 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .info-value {
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .total-value {
+            color: #667eea;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .question {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .question h3 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .question p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-accept {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .btn-accept:hover:not(:disabled) {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-reject {
+            background: #f44336;
+            color: white;
+        }
+
+        .btn-reject:hover:not(:disabled) {
+            background: #da190b;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3);
+        }
+
+        .status {
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .status.show {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-expired {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            color: #999;
+            font-size: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .logo h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <h1>📋 BANSIRIX</h1>
+        </div>
+
+        <div id="offerContent">
+            <div class="offer-info">
+                <h2>📄 Detalii Ofertă</h2>
+                <div class="info-row">
+                    <span class="info-label">Număr ofertă:</span>
+                    <span class="info-value" id="offerNumber">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">De la:</span>
+                    <span class="info-value" id="companyName">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Către:</span>
+                    <span class="info-value" id="clientName">-</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Total:</span>
+                    <span class="total-value" id="totalAmount">-</span>
+                </div>
+            </div>
+
+            <div class="question">
+                <h3>✅ Acceptați această ofertă?</h3>
+                <p>Alegerea dumneavoastră va fi trimisă imediat către furnizor.</p>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-accept" id="btnAccept">
+                    <span>✓</span>
+                    <span>Accept</span>
+                </button>
+                <button class="btn btn-reject" id="btnReject">
+                    <span>✗</span>
+                    <span>Refuz</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="status" class="status">
+            <p id="statusMessage"></p>
+        </div>
+
+        <div class="footer">
+            <p>Acest link este confidențial și personalizat pentru dumneavoastră.</p>
+            <p>© 2025 BANSIRIX. Toate drepturile rezervate.</p>
+        </div>
+    </div>
+
+    <script>
+        // IMPORTANT: Înlocuiește cu URL-ul tău real Supabase
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+        // Get token from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+
+        // Elements
+        const btnAccept = document.getElementById('btnAccept');
+        const btnReject = document.getElementById('btnReject');
+        const statusDiv = document.getElementById('status');
+        const statusMessage = document.getElementById('statusMessage');
+        const offerContent = document.getElementById('offerContent');
+
+        // Load offer details
+        async function loadOfferDetails() {
+            if (!token) {
+                showStatus('error', 'Token lipsă. Link-ul nu este valid.');
+                return;
+            }
+
+            try {
+                // Fetch token data
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/offer_tokens?token=eq.${token}&select=*,offers(*)`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!data || data.length === 0) {
+                    showStatus('error', 'Token invalid. Link-ul nu este valid.');
+                    return;
+                }
+
+                const tokenData = data[0];
+
+                // Check if expired
+                if (new Date(tokenData.expires_at) < new Date()) {
+                    showStatus('expired', '⏰ Acest link a expirat. Vă rugăm să contactați furnizorul pentru un nou link.');
+                    return;
+                }
+
+                // Check if already used
+                if (tokenData.used_at) {
+                    const action = tokenData.action === 'accepted' ? 'acceptat' : 'refuzat';
+                    showStatus('error', `Ați ${action} deja această ofertă pe ${new Date(tokenData.used_at).toLocaleString('ro-RO')}.`);
+                    return;
+                }
+
+                // Load full offer details
+                await loadFullOffer(tokenData.offer_id);
+
+            } catch (error) {
+                console.error('Error loading offer:', error);
+                showStatus('error', 'Eroare la încărcarea ofertei. Vă rugăm să încercați mai târziu.');
+            }
+        }
+
+        async function loadFullOffer(offerId) {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/offers?id=eq.${offerId}&select=*,clients(*),companies(*)`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    }
+                });
+
+                const offers = await response.json();
+                const offer = offers[0];
+
+                // Populate offer details
+                document.getElementById('offerNumber').textContent = offer.offer_number;
+                document.getElementById('companyName').textContent = offer.companies.name;
+                document.getElementById('clientName').textContent = offer.clients.name;
+                document.getElementById('totalAmount').textContent = `${offer.total.toFixed(2)} ${offer.currency}`;
+
+            } catch (error) {
+                console.error('Error loading full offer:', error);
+            }
+        }
+
+        async function handleAction(action) {
+            btnAccept.disabled = true;
+            btnReject.disabled = true;
+
+            const btn = action === 'accepted' ? btnAccept : btnReject;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner"></span><span>Se procesează...</span>';
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/offer_tokens?token=eq.${token}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=representation'
+                    },
+                    body: JSON.stringify({
+                        action: action,
+                        used_at: new Date().toISOString()
+                    })
+                });
+
+                if (response.ok) {
+                    const message = action === 'accepted' 
+                        ? '✅ Mulțumim! Oferta a fost ACCEPTATĂ. Furnizorul va fi notificat imediat.'
+                        : '❌ Oferta a fost REFUZATĂ. Furnizorul va fi notificat.';
+                    
+                    showStatus('success', message);
+                    offerContent.style.display = 'none';
+                } else {
+                    throw new Error('Failed to update');
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                showStatus('error', 'A apărut o eroare. Vă rugăm să încercați din nou.');
+                btn.innerHTML = originalHTML;
+                btnAccept.disabled = false;
+                btnReject.disabled = false;
+            }
+        }
+
+        function showStatus(type, message) {
+            statusDiv.className = `status status-${type} show`;
+            statusMessage.textContent = message;
+        }
+
+        // Event listeners
+        btnAccept.addEventListener('click', () => handleAction('accepted'));
+        btnReject.addEventListener('click', () => handleAction('rejected'));
+
+        // Load offer on page load
+        loadOfferDetails();
+    </script>
+</body>
+</html>

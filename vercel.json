@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "accept-offer.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/accept",
+      "dest": "/accept-offer.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/accept-offer.html"
+    }
+  ]
+}
