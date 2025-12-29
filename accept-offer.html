@@ -489,7 +489,7 @@
                         </tr>
                     `;
                     return;
-                } 
+                }
 
                 // Generate table rows
                 tableBody.innerHTML = products.map((item, index) => `
@@ -525,7 +525,23 @@
             btn.innerHTML = '<span class="spinner"></span><span>Se procesează...</span>';
 
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/offer_tokens?token=eq.${token}`, {
+                // First, get the offer_id from the token
+                const tokenResponse = await fetch(`${SUPABASE_URL}/rest/v1/offer_tokens?token=eq.${token}&select=offer_id`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    }
+                });
+
+                const tokenData = await tokenResponse.json();
+                if (!tokenData || tokenData.length === 0) {
+                    throw new Error('Token not found');
+                }
+
+                const offerId = tokenData[0].offer_id;
+
+                // Update the token
+                const updateTokenResponse = await fetch(`${SUPABASE_URL}/rest/v1/offer_tokens?token=eq.${token}`, {
                     method: 'PATCH',
                     headers: {
                         'apikey': SUPABASE_ANON_KEY,
@@ -539,16 +555,37 @@
                     })
                 });
 
-                if (response.ok) {
-                    const message = action === 'accepted' 
-                        ? '✅ Mulțumim! Oferta a fost ACCEPTATĂ. Furnizorul va fi notificat imediat.'
-                        : '❌ Oferta a fost REFUZATĂ. Furnizorul va fi notificat.';
-                    
-                    showStatus('success', message);
-                    offerContent.style.display = 'none';
-                } else {
-                    throw new Error('Failed to update');
+                if (!updateTokenResponse.ok) {
+                    throw new Error('Failed to update token');
                 }
+
+                // Update the offer status
+                const newStatus = action === 'accepted' ? 'COMANDATA' : 'TRIMISA';
+                const updateOfferResponse = await fetch(`${SUPABASE_URL}/rest/v1/offers?id=eq.${offerId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=representation'
+                    },
+                    body: JSON.stringify({
+                        status: newStatus
+                    })
+                });
+
+                if (!updateOfferResponse.ok) {
+                    throw new Error('Failed to update offer status');
+                }
+
+                console.log('✅ Offer status updated to:', newStatus);
+
+                const message = action === 'accepted' 
+                    ? '✅ Mulțumim! Oferta a fost ACCEPTATĂ. Furnizorul va fi notificat imediat.'
+                    : '❌ Oferta a fost REFUZATĂ. Furnizorul va fi notificat.';
+                
+                showStatus('success', message);
+                offerContent.style.display = 'none';
 
             } catch (error) {
                 console.error('Error:', error);
@@ -573,4 +610,3 @@
     </script>
 </body>
 </html>
- 
