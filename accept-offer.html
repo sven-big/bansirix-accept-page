@@ -97,6 +97,70 @@
             font-weight: 700;
         }
 
+        .products-section {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .products-section h3 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .products-table thead {
+            background: #667eea;
+            color: white;
+        }
+
+        .products-table th {
+            padding: 12px 8px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .products-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+        }
+
+        .products-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .products-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .product-total {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        @media (max-width: 600px) {
+            .products-table {
+                font-size: 12px;
+            }
+            
+            .products-table th,
+            .products-table td {
+                padding: 8px 4px;
+            }
+        }
+
         .question {
             text-align: center;
             margin: 30px 0;
@@ -264,6 +328,30 @@
                 </div>
             </div>
 
+            <!-- Products Section -->
+            <div class="products-section">
+                <h3>📦 Produse / Servicii</h3>
+                <table class="products-table">
+                    <thead>
+                        <tr>
+                            <th>Nr.</th>
+                            <th>Descriere</th>
+                            <th>UM</th>
+                            <th>Cant.</th>
+                            <th>Preț</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #999;">
+                                Se încarcă produsele...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
             <div class="question">
                 <h3>✅ Acceptați această ofertă?</h3>
                 <p>Alegerea dumneavoastră va fi trimisă imediat către furnizor.</p>
@@ -293,8 +381,8 @@
 
     <script>
         // IMPORTANT: Înlocuiește cu URL-ul tău real Supabase
-        const SUPABASE_URL = 'https://supabase.com/dashboard/project/mjcifhpmlkvnennhswac/settings/api-keys/legacy';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1qY2lmaHBtbGt2bmVubmhzd2FjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU2OTU5MjksImV4cCI6MjA4MTI3MTkyOX0.XXna0fjJbXORdTr0Jh7serYe5D07AKZ1CGcWEeP3KjM';
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
         // Get token from URL
         const urlParams = new URLSearchParams(window.location.search);
@@ -372,8 +460,59 @@
                 document.getElementById('clientName').textContent = offer.clients.name;
                 document.getElementById('totalAmount').textContent = `${offer.total.toFixed(2)} ${offer.currency}`;
 
+                // Load products
+                await loadProducts(offerId, offer.currency);
+
             } catch (error) {
                 console.error('Error loading full offer:', error);
+            }
+        }
+
+        async function loadProducts(offerId, currency) {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/offer_items?offer_id=eq.${offerId}&select=*&order=order_index.asc`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    }
+                });
+
+                const products = await response.json();
+                const tableBody = document.getElementById('productsTableBody');
+
+                if (!products || products.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #999;">
+                                Nu există produse în ofertă
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                // Generate table rows
+                tableBody.innerHTML = products.map((item, index) => `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${item.product_name}</strong></td>
+                        <td>${item.unit_measure}</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.unit_price.toFixed(2)} ${currency}</td>
+                        <td class="product-total">${item.total_price.toFixed(2)} ${currency}</td>
+                    </tr>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading products:', error);
+                const tableBody = document.getElementById('productsTableBody');
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: #f44336;">
+                            Eroare la încărcarea produselor
+                        </td>
+                    </tr>
+                `;
             }
         }
 
