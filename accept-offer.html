@@ -580,6 +580,57 @@
 
                 console.log('✅ Offer status updated to:', newStatus);
 
+                // Get offer details for notification
+                const offerResponse = await fetch(`${SUPABASE_URL}/rest/v1/offers?id=eq.${offerId}&select=*,clients(*),companies(*)`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    }
+                });
+
+                const offerData = await offerResponse.json();
+                const offer = offerData[0];
+
+                // Create notification
+                const notificationType = action === 'accepted' ? 'offer_accepted' : 'offer_rejected';
+                const notificationTitle = action === 'accepted' 
+                    ? '✅ Ofertă Acceptată!'
+                    : '❌ Ofertă Refuzată';
+                const notificationMessage = action === 'accepted'
+                    ? `${offer.clients.name} a acceptat oferta ${offer.offer_number}. Total: ${offer.total.toFixed(2)} ${offer.currency}`
+                    : `${offer.clients.name} a refuzat oferta ${offer.offer_number}.`;
+
+                const notificationResponse = await fetch(`${SUPABASE_URL}/rest/v1/notifications`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=representation'
+                    },
+                    body: JSON.stringify({
+                        company_id: offer.company_id,
+                        offer_id: offer.id,
+                        type: notificationType,
+                        title: notificationTitle,
+                        message: notificationMessage,
+                        read: false,
+                        metadata: {
+                            client_name: offer.clients.name,
+                            offer_number: offer.offer_number,
+                            total: offer.total,
+                            currency: offer.currency,
+                            action_date: new Date().toISOString()
+                        }
+                    })
+                });
+
+                if (notificationResponse.ok) {
+                    console.log('✅ Notification created');
+                } else {
+                    console.warn('⚠️ Failed to create notification, but action succeeded');
+                }
+
                 const message = action === 'accepted' 
                     ? '✅ Mulțumim! Oferta a fost ACCEPTATĂ. Furnizorul va fi notificat imediat.'
                     : '❌ Oferta a fost REFUZATĂ. Furnizorul va fi notificat.';
